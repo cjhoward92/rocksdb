@@ -148,7 +148,7 @@ struct rocksdb_compactoptions_t {
   CompactRangeOptions rep;
 };
 struct rocksdb_config_options_t { ConfigOptions rep; };
-struct rocksdb_db_options_t   { DBOptions*  rep; };
+struct rocksdb_db_options_t   { DBOptions  rep; };
 struct rocksdb_block_based_table_options_t  { BlockBasedTableOptions rep; };
 struct rocksdb_cuckoo_table_options_t  { CuckooTableOptions rep; };
 struct rocksdb_seqfile_t         { SequentialFile*   rep; };
@@ -3517,9 +3517,10 @@ void rocksdb_options_load_from_file(
 
   const ConfigOptions& c_opts = config_options->rep;
   auto* cf_descs_vec = new vector<ColumnFamilyDescriptor>();
+  printf("About to call C++ API");
   Status s = rocksdb::LoadOptionsFromFile(
         c_opts, std::string(filename),
-        db_options->rep, cf_descs_vec,
+        &db_options->rep, cf_descs_vec,
         &cache->rep);
 
   if (SaveError(errptr, s)) {
@@ -3530,15 +3531,16 @@ void rocksdb_options_load_from_file(
   (*cf_descs_len) = cf_descs_vec->size();
 
   size_t vector_size = cf_descs_vec->size() * sizeof(rocksdb_column_family_descriptor_t);
-  auto temp_cfs = vector<rocksdb_column_family_descriptor_t>(vector_size);
+  auto temp_cfs = new vector<rocksdb_column_family_descriptor_t>(vector_size);
   for (const ColumnFamilyDescriptor& cf_dec : *cf_descs_vec) {
     auto cf_t = rocksdb_column_family_descriptor_t();
     cf_t.rep = cf_dec;
-    temp_cfs.push_back(cf_t);
+    temp_cfs->push_back(cf_t);
   }
 
-  (*cf_descs) = temp_cfs.data();
+  (*cf_descs) = temp_cfs->data();
   delete cf_descs_vec;
+  delete temp_cfs;
 }
 
 rocksdb_ratelimiter_t* rocksdb_ratelimiter_create(

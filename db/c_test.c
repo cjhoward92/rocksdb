@@ -2961,16 +2961,19 @@ int main(int argc, char** argv) {
 
   StartPhase("load_options_from_file");
   {
+    printf("Phase 1");
     rocksdb_config_options_t* opts = rocksdb_config_options_create();
     rocksdb_db_options_t* db_opts = rocksdb_db_options_create();
 
     rocksdb_column_family_descriptor_t** cf_descs = NULL;
     size_t cf_descs_len = 0;
+    printf("Hello");
     rocksdb_options_load_from_file(
-        opts, dbname,
+        opts, "/tmp/rocksdb_c_test-1000/OPTIONS-000007",
         db_opts, cf_descs, &cf_descs_len,
         cache, &err);
     CheckNoError(err);
+    CheckCondition(cf_descs_len > 0);
   }
 
   StartPhase("cancel_all_background_work");
