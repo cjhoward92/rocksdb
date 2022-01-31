@@ -40,6 +40,7 @@
 #include "rocksdb/utilities/db_ttl.h"
 #include "rocksdb/utilities/memory_util.h"
 #include "rocksdb/utilities/optimistic_transaction_db.h"
+#include "rocksdb/utilities/options_util.h"
 #include "rocksdb/utilities/table_properties_collectors.h"
 #include "rocksdb/utilities/transaction.h"
 #include "rocksdb/utilities/transaction_db.h"
@@ -66,6 +67,7 @@ using ROCKSDB_NAMESPACE::CompactionOptionsFIFO;
 using ROCKSDB_NAMESPACE::CompactRangeOptions;
 using ROCKSDB_NAMESPACE::Comparator;
 using ROCKSDB_NAMESPACE::CompressionType;
+using ROCKSDB_NAMESPACE::ConfigOptions;
 using ROCKSDB_NAMESPACE::CuckooTableOptions;
 using ROCKSDB_NAMESPACE::DB;
 using ROCKSDB_NAMESPACE::DBOptions;
@@ -145,6 +147,8 @@ struct rocksdb_options_t         { Options           rep; };
 struct rocksdb_compactoptions_t {
   CompactRangeOptions rep;
 };
+struct rocksdb_config_options_t { ConfigOptions rep; };
+struct rocksdb_db_options_t   { DBOptions*  rep; };
 struct rocksdb_block_based_table_options_t  { BlockBasedTableOptions rep; };
 struct rocksdb_cuckoo_table_options_t  { CuckooTableOptions rep; };
 struct rocksdb_seqfile_t         { SequentialFile*   rep; };
@@ -166,6 +170,7 @@ struct rocksdb_cache_t {
   std::shared_ptr<Cache> rep;
 };
 struct rocksdb_livefiles_t       { std::vector<LiveFileMetaData> rep; };
+struct rocksdb_column_family_descriptor_t   { ColumnFamilyDescriptor rep; };
 struct rocksdb_column_family_handle_t  { ColumnFamilyHandle* rep; };
 struct rocksdb_envoptions_t      { EnvOptions        rep; };
 struct rocksdb_ingestexternalfileoptions_t  { IngestExternalFileOptions rep; };
@@ -3488,6 +3493,52 @@ void rocksdb_options_set_wal_compression(rocksdb_options_t* opt, int val) {
 
 int rocksdb_options_get_wal_compression(rocksdb_options_t* opt) {
   return opt->rep.wal_compression;
+}
+
+rocksdb_config_options_t * rocksdb_config_options_create() {
+  return new rocksdb_config_options_t;
+}
+
+rocksdb_db_options_t * rocksdb_db_options_create() {
+  return new rocksdb_db_options_t;
+}
+
+rocksdb_column_family_descriptor_t * rocksdb_column_family_descriptor_create() {
+  return new rocksdb_column_family_descriptor_t;
+}
+
+// TODO(cjhoward92)
+void rocksdb_options_load_from_file(
+    const rocksdb_config_options_t* config_options,
+    const char* filename, rocksdb_db_options_t* db_options,
+    rocksdb_column_family_descriptor_t** cf_descs,
+    size_t* cf_descs_len, rocksdb_cache_t* cache,
+    char** errptr) {
+
+  const ConfigOptions& c_opts = config_options->rep;
+  auto* cf_descs_vec = new vector<ColumnFamilyDescriptor>();
+  Status s = rocksdb::LoadOptionsFromFile(
+        c_opts, std::string(filename),
+        db_options->rep, cf_descs_vec,
+        &cache->rep);
+
+  if (SaveError(errptr, s)) {
+    delete cf_descs_vec;
+    return;
+  }
+
+  (*cf_descs_len) = cf_descs_vec->size();
+
+  size_t vector_size = cf_descs_vec->size() * sizeof(rocksdb_column_family_descriptor_t);
+  auto temp_cfs = vector<rocksdb_column_family_descriptor_t>(vector_size);
+  for (const ColumnFamilyDescriptor& cf_dec : *cf_descs_vec) {
+    auto cf_t = rocksdb_column_family_descriptor_t();
+    cf_t.rep = cf_dec;
+    temp_cfs.push_back(cf_t);
+  }
+
+  (*cf_descs) = temp_cfs.data();
+  delete cf_descs_vec;
 }
 
 rocksdb_ratelimiter_t* rocksdb_ratelimiter_create(

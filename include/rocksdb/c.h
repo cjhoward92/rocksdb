@@ -93,6 +93,8 @@ typedef struct rocksdb_logger_t          rocksdb_logger_t;
 typedef struct rocksdb_mergeoperator_t   rocksdb_mergeoperator_t;
 typedef struct rocksdb_options_t         rocksdb_options_t;
 typedef struct rocksdb_compactoptions_t rocksdb_compactoptions_t;
+typedef struct rocksdb_config_options_t rocksdb_config_options_t;
+typedef struct rocksdb_db_options_t     rocksdb_db_options_t;
 typedef struct rocksdb_block_based_table_options_t
     rocksdb_block_based_table_options_t;
 typedef struct rocksdb_cuckoo_table_options_t
@@ -108,6 +110,7 @@ typedef struct rocksdb_writebatch_wi_t   rocksdb_writebatch_wi_t;
 typedef struct rocksdb_writeoptions_t    rocksdb_writeoptions_t;
 typedef struct rocksdb_universal_compaction_options_t rocksdb_universal_compaction_options_t;
 typedef struct rocksdb_livefiles_t     rocksdb_livefiles_t;
+typedef struct rocksdb_column_family_descriptor_t rocksdb_column_family_descriptor_t;
 typedef struct rocksdb_column_family_handle_t rocksdb_column_family_handle_t;
 typedef struct rocksdb_envoptions_t      rocksdb_envoptions_t;
 typedef struct rocksdb_ingestexternalfileoptions_t rocksdb_ingestexternalfileoptions_t;
@@ -1425,6 +1428,25 @@ extern ROCKSDB_LIBRARY_API void rocksdb_options_set_wal_compression(
     rocksdb_options_t* opt, int);
 extern ROCKSDB_LIBRARY_API int rocksdb_options_get_wal_compression(
     rocksdb_options_t* opt);
+
+/* OptionsUtils */
+
+// TODO(cjhoward92)
+extern ROCKSDB_LIBRARY_API rocksdb_config_options_t *
+    rocksdb_config_options_create(void);
+
+extern ROCKSDB_LIBRARY_API rocksdb_db_options_t *
+    rocksdb_db_options_create(void);
+
+extern ROCKSDB_LIBRARY_API rocksdb_column_family_descriptor_t *
+    rocksdb_column_family_descriptor_create(void);
+
+extern ROCKSDB_LIBRARY_API void rocksdb_options_load_from_file(
+    const rocksdb_config_options_t* config_options,
+    const char* filename, rocksdb_db_options_t* db_options,
+    rocksdb_column_family_descriptor_t** cf_descs,
+    size_t* cf_descs_len, rocksdb_cache_t* cache,
+    char** errptr);
 
 /* RateLimiter */
 extern ROCKSDB_LIBRARY_API rocksdb_ratelimiter_t* rocksdb_ratelimiter_create(

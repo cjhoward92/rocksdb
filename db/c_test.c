@@ -2959,6 +2959,20 @@ int main(int argc, char** argv) {
     rocksdb_readoptions_destroy(ropts);
   }
 
+  StartPhase("load_options_from_file");
+  {
+    rocksdb_config_options_t* opts = rocksdb_config_options_create();
+    rocksdb_db_options_t* db_opts = rocksdb_db_options_create();
+
+    rocksdb_column_family_descriptor_t** cf_descs = NULL;
+    size_t cf_descs_len = 0;
+    rocksdb_options_load_from_file(
+        opts, dbname,
+        db_opts, cf_descs, &cf_descs_len,
+        cache, &err);
+    CheckNoError(err);
+  }
+
   StartPhase("cancel_all_background_work");
   rocksdb_cancel_all_background_work(db, 1);
 
