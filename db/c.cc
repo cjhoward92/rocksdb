@@ -3511,7 +3511,7 @@ rocksdb_column_family_descriptor_t * rocksdb_column_family_descriptor_create() {
 void rocksdb_options_load_from_file(
     const rocksdb_config_options_t* config_options,
     const char* filename, rocksdb_db_options_t* db_options,
-    rocksdb_column_family_descriptor_t** cf_descs,
+    rocksdb_column_family_descriptor_t*** cf_descs,
     size_t* cf_descs_len, rocksdb_cache_t* cache,
     char** errptr) {
 
@@ -3529,18 +3529,19 @@ void rocksdb_options_load_from_file(
   }
 
   (*cf_descs_len) = cf_descs_vec->size();
+  auto** descs_arr = (rocksdb_column_family_descriptor_t **)
+      malloc(sizeof(rocksdb_column_family_descriptor_t *) * cf_descs_vec->size());
 
-  size_t vector_size = cf_descs_vec->size() * sizeof(rocksdb_column_family_descriptor_t);
-  auto temp_cfs = new vector<rocksdb_column_family_descriptor_t>(vector_size);
-  for (const ColumnFamilyDescriptor& cf_dec : *cf_descs_vec) {
-    auto cf_t = rocksdb_column_family_descriptor_t();
-    cf_t.rep = cf_dec;
-    temp_cfs->push_back(cf_t);
+  for (size_t i = 0; i < cf_descs_vec->size(); i++) {
+    rocksdb_column_family_descriptor_t* cf_t = rocksdb_column_family_descriptor_create();
+    cf_t->rep = cf_descs_vec->at(i);
+    descs_arr += i;
+    (*descs_arr) = cf_t;
+    descs_arr -= i;
   }
 
-  (*cf_descs) = temp_cfs->data();
+  (*cf_descs) = descs_arr;
   delete cf_descs_vec;
-  delete temp_cfs;
 }
 
 rocksdb_ratelimiter_t* rocksdb_ratelimiter_create(

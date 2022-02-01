@@ -2970,7 +2970,7 @@ int main(int argc, char** argv) {
     printf("Hello");
     rocksdb_options_load_from_file(
         opts, "/tmp/rocksdb_c_test-1000/OPTIONS-000007",
-        db_opts, cf_descs, &cf_descs_len,
+        db_opts, &cf_descs, &cf_descs_len,
         cache, &err);
     CheckNoError(err);
     CheckCondition(cf_descs_len > 0);

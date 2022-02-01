@@ -1444,7 +1444,7 @@ extern ROCKSDB_LIBRARY_API rocksdb_column_family_descriptor_t *
 extern ROCKSDB_LIBRARY_API void rocksdb_options_load_from_file(
     const rocksdb_config_options_t* config_options,
     const char* filename, rocksdb_db_options_t* db_options,
-    rocksdb_column_family_descriptor_t** cf_descs,
+    rocksdb_column_family_descriptor_t*** cf_descs,
     size_t* cf_descs_len, rocksdb_cache_t* cache,
     char** errptr);
 
