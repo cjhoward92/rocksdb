@@ -34,12 +34,10 @@ Status LoadOptionsFromFile(const ConfigOptions& config_options,
                            std::shared_ptr<Cache>* cache) {
   RocksDBOptionsParser parser;
   const auto& fs = config_options.env->GetFileSystem();
-  printf("Parsing %s", file_name.c_str());
   Status s = parser.Parse(config_options, file_name, fs.get());
   if (!s.ok()) {
     return s;
   }
-  printf("Parsing done");
   *db_options = *parser.db_opt();
   const std::vector<std::string>& cf_names = *parser.cf_names();
   const std::vector<ColumnFamilyOptions>& cf_opts = *parser.cf_opts();

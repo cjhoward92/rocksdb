@@ -112,6 +112,7 @@ typedef struct rocksdb_universal_compaction_options_t rocksdb_universal_compacti
 typedef struct rocksdb_livefiles_t     rocksdb_livefiles_t;
 typedef struct rocksdb_column_family_descriptor_t rocksdb_column_family_descriptor_t;
 typedef struct rocksdb_column_family_handle_t rocksdb_column_family_handle_t;
+typedef struct rocksdb_column_family_options_t rocksdb_column_family_options_t;
 typedef struct rocksdb_envoptions_t      rocksdb_envoptions_t;
 typedef struct rocksdb_ingestexternalfileoptions_t rocksdb_ingestexternalfileoptions_t;
 typedef struct rocksdb_sstfilewriter_t   rocksdb_sstfilewriter_t;
@@ -1428,6 +1429,15 @@ extern ROCKSDB_LIBRARY_API void rocksdb_options_set_wal_compression(
     rocksdb_options_t* opt, int);
 extern ROCKSDB_LIBRARY_API int rocksdb_options_get_wal_compression(
     rocksdb_options_t* opt);
+
+/* OptionsParser */
+
+extern ROCKSDB_LIBRARY_API void rocksdb_options_persis(
+    const rocksdb_db_options_t* db_opt,
+    const char* const* cf_names, size_t cf_names_len,
+    const rocksdb_column_family_options_t* const* cf_opts,
+    size_t cf_opts_len, const char* file_name,
+    const rocksdb_env_t* env, char** errptr);
 
 /* OptionsUtils */
 

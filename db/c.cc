@@ -172,6 +172,7 @@ struct rocksdb_cache_t {
 struct rocksdb_livefiles_t       { std::vector<LiveFileMetaData> rep; };
 struct rocksdb_column_family_descriptor_t   { ColumnFamilyDescriptor rep; };
 struct rocksdb_column_family_handle_t  { ColumnFamilyHandle* rep; };
+struct rocksdb_column_family_options_t  { ColumnFamilyOptions rep; };
 struct rocksdb_envoptions_t      { EnvOptions        rep; };
 struct rocksdb_ingestexternalfileoptions_t  { IngestExternalFileOptions rep; };
 struct rocksdb_sstfilewriter_t   { SstFileWriter*    rep; };
@@ -3495,6 +3496,15 @@ int rocksdb_options_get_wal_compression(rocksdb_options_t* opt) {
   return opt->rep.wal_compression;
 }
 
+void rocksdb_options_persis(
+    const rocksdb_db_options_t* db_opt,
+    const char* const* cf_names, size_t cf_names_len,
+    const rocksdb_column_family_options_t* const* cf_opts,
+    size_t cf_opts_len, const char* file_name,
+    const rocksdb_env_t* env, char** errptr) {
+  // TODO(cjhoward92)
+}
+
 rocksdb_config_options_t * rocksdb_config_options_create() {
   return new rocksdb_config_options_t;
 }
@@ -3517,7 +3527,6 @@ void rocksdb_options_load_from_file(
 
   const ConfigOptions& c_opts = config_options->rep;
   auto* cf_descs_vec = new vector<ColumnFamilyDescriptor>();
-  printf("About to call C++ API");
   Status s = rocksdb::LoadOptionsFromFile(
         c_opts, std::string(filename),
         &db_options->rep, cf_descs_vec,
@@ -3529,18 +3538,18 @@ void rocksdb_options_load_from_file(
   }
 
   (*cf_descs_len) = cf_descs_vec->size();
-  auto** descs_arr = (rocksdb_column_family_descriptor_t **)
+  auto** descs = (rocksdb_column_family_descriptor_t **)
       malloc(sizeof(rocksdb_column_family_descriptor_t *) * cf_descs_vec->size());
 
   for (size_t i = 0; i < cf_descs_vec->size(); i++) {
     rocksdb_column_family_descriptor_t* cf_t = rocksdb_column_family_descriptor_create();
     cf_t->rep = cf_descs_vec->at(i);
-    descs_arr += i;
-    (*descs_arr) = cf_t;
-    descs_arr -= i;
+    descs += i;
+    (*descs) = cf_t;
+    descs -= i;
   }
 
-  (*cf_descs) = descs_arr;
+  (*cf_descs) = descs;
   delete cf_descs_vec;
 }
 
