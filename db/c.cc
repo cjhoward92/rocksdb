@@ -172,7 +172,6 @@ struct rocksdb_cache_t {
 struct rocksdb_livefiles_t       { std::vector<LiveFileMetaData> rep; };
 struct rocksdb_column_family_descriptor_t   { ColumnFamilyDescriptor rep; };
 struct rocksdb_column_family_handle_t  { ColumnFamilyHandle* rep; };
-struct rocksdb_column_family_options_t  { ColumnFamilyOptions rep; };
 struct rocksdb_envoptions_t      { EnvOptions        rep; };
 struct rocksdb_ingestexternalfileoptions_t  { IngestExternalFileOptions rep; };
 struct rocksdb_sstfilewriter_t   { SstFileWriter*    rep; };
@@ -180,7 +179,7 @@ struct rocksdb_ratelimiter_t {
   std::shared_ptr<RateLimiter> rep;
 };
 struct rocksdb_perfcontext_t     { PerfContext*      rep; };
-struct rocksdb_pinnableslice_t {
+struct rocksdb_pinnableslice_t {typedef struct rocksdb_column_family_options_t rocksdb_column_family_options_t;
   PinnableSlice rep;
 };
 struct rocksdb_transactiondb_options_t {
@@ -294,7 +293,10 @@ struct rocksdb_comparator_t : public Comparator {
 
 struct rocksdb_filterpolicy_t : public FilterPolicy {
   void* state_;
-  void (*destructor_)(void*);
+  void (*destructor_)(void*);t
+t
+c
+r
   const char* (*name_)(void*);
   char* (*create_)(
       void*,

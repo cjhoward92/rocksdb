@@ -313,7 +313,7 @@ class FileSystem : public Customizable {
   // The returned file will only be accessed by one thread at a time.
   virtual IOStatus NewSequentialFile(const std::string& fname,
                                      const FileOptions& file_opts,
-                                     std::unique_ptr<FSSequentialFile>* result,
+                                    FileSystem std::unique_ptr<FSSequentialFile>* result,
                                      IODebugContext* dbg) = 0;
 
   // Create a brand new random access read-only file with the
